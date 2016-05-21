@@ -10,5 +10,5 @@ users_2014$classLabel <- factor(ifelse((is.na(users_2014$TARGET_TASK_2) == TRUE)
 
 users_2014 <- users_2014[TARGET_TASK_2 < as.Date("2015-01-01") | is.na(TARGET_TASK_2) == TRUE,]
 
-
+summary(users_2014)
 
