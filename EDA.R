@@ -12,3 +12,4 @@ users_2014 <- users_2014[TARGET_TASK_2 < as.Date("2015-01-01") | is.na(TARGET_TA
 
 summary(users_2014)
 
+#bakfity
