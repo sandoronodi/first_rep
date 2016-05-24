@@ -1,4 +1,4 @@
-sapply(c("rpart", "rattle", "rpart.plot", "RColorBrewer", "ROCR", "caret"), require, character.only = TRUE)
+sapply(c("rpart", "rattle", "rpart.plot", "RColorBrewer", "ROCR", "caret", "randomForest"), require, character.only = TRUE)
 
 train_base<- read.csv("train_base.csv")
 train <- train_base
@@ -28,8 +28,8 @@ train_base[, .(n = .N, prop_Y = mean(classLabel)), by = .(MAX_MC_CAT)]
 t1.prior <- rpart(formula = classLabel ~ .,
                   data = train,
                   method = "class",
-                  control = rpart.control(minbucket = 100, cp = 0.0001),
-                  parms = list(split = "information"))
+                  control = rpart.control(minbucket = 100, cp = 0.000001),
+                  parms = list(split = "gini"))
 
 ##PRUNING with minimizing X-err
 t1.prior.cp <- t1.prior$cptable[which.min(t1.prior$cptable[, "xerror"]), "CP"]
@@ -38,9 +38,22 @@ t1.ppp <- predict(t1.prior.prune, test, type = "prob")
 
 t1.pred <- prediction(t1.ppp[,2], test$classLabel)
 
+###########################xxxx
+
+
+rf <- randomForest(formula = classLabel ~ . -W201406_F,
+                   data = train,
+                   #importance = TRUE, 
+                   ntree = 150)
+
+#varImpPlot(rf)
+
+pred <- predict(rf, test, type = "prob")
+rf.pred <- prediction(pred[,2], test$classLabel)
+
 #AUC
-as.numeric(performance(t1.pred, "auc")@y.values)
+as.numeric(performance(rf.pred, "auc")@y.values)
 
 #ACCURACY
-conf <- table(test$classLabel, predict(t1.prior.prune, test, type = "class"))
+conf <- table(test$classLabel, predict(rf, test, type = "class"))
 sum(diag(conf))/sum(conf)
